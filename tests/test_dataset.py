@@ -21,16 +21,68 @@ def test_datasets_override_default(dataset_name):
     dataset_class = DATASETS.get(dataset_name)
     dataset_class.load_annotations = MagicMock()
 
+    original_classes = dataset_class.CLASSES
+
+    # Test setting classes as a tuple
+    dataset = dataset_class(
+        data_prefix='', pipeline=[], classes=('bus', 'car'), test_mode=True)
+    assert dataset.CLASSES != original_classes
+    assert dataset.CLASSES == ('bus', 'car')
+
+    # Test setting classes as a list
+    dataset = dataset_class(
+        data_prefix='', pipeline=[], classes=['bus', 'car'], test_mode=True)
+    assert dataset.CLASSES != original_classes
+    assert dataset.CLASSES == ['bus', 'car']
+
+    # Test setting classes through a file
+    tmp_file = tempfile.NamedTemporaryFile()
+    with open(tmp_file.name, 'w') as f:
+        f.write('bus\ncar\n')
+    dataset = dataset_class(
+        data_prefix='', pipeline=[], classes=tmp_file.name, test_mode=True)
+    tmp_file.close()
+
+    assert dataset.CLASSES != original_classes
+    assert dataset.CLASSES == ['bus', 'car']
+
+    # Test overriding not a subset
+    dataset = dataset_class(
+        data_prefix='', pipeline=[], classes=['foo'], test_mode=True)
+    assert dataset.CLASSES != original_classes
+    assert dataset.CLASSES == ['foo']
+
     # Test default behavior
     dataset = dataset_class(data_prefix='', pipeline=[])
 
     assert dataset.data_prefix == ''
     assert not dataset.test_mode
     assert dataset.ann_file is None
+    assert dataset.CLASSES == original_classes
+
+
+@patch.multiple(BaseDataset, __abstractmethods__=set())
+def test_dataset_evaluation():
+    dataset = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
+    dataset.data_infos = [
+        dict(gt_label=0),
+        dict(gt_label=1),
+        dict(gt_label=2),
+        dict(gt_label=1)
+    ]
+    fake_results = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 1]])
+    eval_results = dataset.evaluate(
+        fake_results, metric=['precision', 'recall', 'f1_score'])
+    assert eval_results['precision'] == pytest.approx(
+        (1 + 1 + 1 / 2) / 3 * 100.0)
+    assert eval_results['recall'] == pytest.approx((1 + 1 / 2 + 1) / 3 * 100.0)
+    assert eval_results['f1_score'] == pytest.approx(
+        (1 + 2 / 3 + 2 / 3) / 3 * 100.0)
 
 
 @patch.multiple(BaseDataset, __abstractmethods__=set())
 def test_dataset_wrapper():
+    BaseDataset.CLASSES = ('foo', 'bar')
     BaseDataset.__getitem__ = MagicMock(side_effect=lambda idx: idx)
     dataset_a = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
     len_a = 10
@@ -59,6 +111,7 @@ def test_dataset_wrapper():
     assert concat_dataset.get_cat_ids(5) == cat_ids_list_a[5]
     assert concat_dataset.get_cat_ids(25) == cat_ids_list_b[15]
     assert len(concat_dataset) == len(dataset_a) + len(dataset_b)
+    assert concat_dataset.CLASSES == BaseDataset.CLASSES
 
     repeat_dataset = RepeatDataset(dataset_a, 10)
     assert repeat_dataset[5] == 5
@@ -68,6 +121,7 @@ def test_dataset_wrapper():
     assert repeat_dataset.get_cat_ids(15) == cat_ids_list_a[5]
     assert repeat_dataset.get_cat_ids(27) == cat_ids_list_a[7]
     assert len(repeat_dataset) == 10 * len(dataset_a)
+    assert repeat_dataset.CLASSES == BaseDataset.CLASSES
 
     category_freq = defaultdict(int)
     for cat_ids in cat_ids_list_a:
@@ -92,6 +146,7 @@ def test_dataset_wrapper():
         repeat_factors.append(math.ceil(repeat_factor))
     repeat_factors_cumsum = np.cumsum(repeat_factors)
     repeat_factor_dataset = ClassBalancedDataset(dataset_a, repeat_thr)
+    assert repeat_factor_dataset.CLASSES == BaseDataset.CLASSES
     assert len(repeat_factor_dataset) == repeat_factors_cumsum[-1]
     for idx in np.random.randint(0, len(repeat_factor_dataset), 3):
         assert repeat_factor_dataset[idx] == bisect.bisect_right(

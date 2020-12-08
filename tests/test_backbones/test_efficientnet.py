@@ -33,6 +33,10 @@ def test_efficientnet_backbone():
         # arch must in arc_settings
         EfficientNet(arch='others')
 
+    with pytest.raises(ValueError):
+        # out_indices must be contained in layer_setting
+        model = EfficientNet(out_indices=(7, ))
+
     for arch in archs:
         with pytest.raises(ValueError):
             # frozen_stages must less than 7
@@ -42,6 +46,8 @@ def test_efficientnet_backbone():
     model = EfficientNet()
     model.init_weights()
     model.train()
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
 
     # Test EfficientNet with first stage frozen
     frozen_stages = 7
@@ -78,6 +84,23 @@ def test_efficientnet_backbone():
     assert feat[4].shape == torch.Size([1, out_channels[4], 14, 14])
     assert feat[5].shape == torch.Size([1, out_channels[5], 7, 7])
     assert feat[6].shape == torch.Size([1, out_channels[6], 7, 7])
+
+    # Test EfficientNet forward with 'b2' arch
+    out_channels = [32, 16, 24, 48, 120, 352, 1408]
+    model = EfficientNet(arch='b2', out_indices=(0, 1, 2, 3, 4, 5, 6))
+    model.init_weights()
+    model.train()
+
+    imgs = torch.randn(1, 3, 260, 260)
+    feat = model(imgs)
+    assert len(feat) == 7
+    assert feat[0].shape == torch.Size([1, out_channels[0], 130, 130])
+    assert feat[1].shape == torch.Size([1, out_channels[1], 130, 130])
+    assert feat[2].shape == torch.Size([1, out_channels[2], 65, 65])
+    assert feat[3].shape == torch.Size([1, out_channels[3], 33, 33])
+    assert feat[4].shape == torch.Size([1, out_channels[4], 17, 17])
+    assert feat[5].shape == torch.Size([1, out_channels[5], 9, 9])
+    assert feat[6].shape == torch.Size([1, out_channels[6], 9, 9])
 
     # Test EfficientNet forward with 'b0' arch and GroupNorm
     out_channels = [32, 16, 24, 40, 112, 320, 1280]

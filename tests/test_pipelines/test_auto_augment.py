@@ -63,7 +63,6 @@ def test_rand_augment():
             num_policies=1.5,
             magnitude_level=12)
         build_from_cfg(transform, PIPELINES)
-<<<<<<< HEAD
     with pytest.raises(AssertionError):
         transform = dict(
             type='RandAugment',
@@ -71,8 +70,6 @@ def test_rand_augment():
             num_policies=-1,
             magnitude_level=12)
         build_from_cfg(transform, PIPELINES)
-=======
->>>>>>> 0b002bd... support random augmentation
     # test assertion for magnitude_level
     with pytest.raises(AssertionError):
         transform = dict(
@@ -81,7 +78,6 @@ def test_rand_augment():
             num_policies=1,
             magnitude_level=None)
         build_from_cfg(transform, PIPELINES)
-<<<<<<< HEAD
     with pytest.raises(AssertionError):
         transform = dict(
             type='RandAugment',
@@ -89,8 +85,6 @@ def test_rand_augment():
             num_policies=1,
             magnitude_level=-1)
         build_from_cfg(transform, PIPELINES)
-=======
->>>>>>> 0b002bd... support random augmentation
     # test assertion for total_level
     with pytest.raises(AssertionError):
         transform = dict(
@@ -100,7 +94,6 @@ def test_rand_augment():
             magnitude_level=12,
             total_level=None)
         build_from_cfg(transform, PIPELINES)
-<<<<<<< HEAD
     with pytest.raises(AssertionError):
         transform = dict(
             type='RandAugment',
@@ -109,8 +102,6 @@ def test_rand_augment():
             magnitude_level=12,
             total_level=-30)
         build_from_cfg(transform, PIPELINES)
-=======
->>>>>>> 0b002bd... support random augmentation
     # test assertion for policies
     with pytest.raises(AssertionError):
         transform = dict(
@@ -147,20 +138,6 @@ def test_rand_augment():
             magnitude_level=12)
         build_from_cfg(transform, PIPELINES)
 
-<<<<<<< HEAD
-=======
-    # test case where num_policies = 0 therefore no augment
-    results = construct_toy_data()
-    transform = dict(
-        type='RandAugment',
-        policies=policies,
-        num_policies=0,
-        magnitude_level=12)
-    pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    assert (results['img'] == results['ori_img']).all()
-
->>>>>>> 0b002bd... support random augmentation
     # test case where num_policies = 1
     random.seed(1)
     np.random.seed(0)
@@ -676,59 +653,6 @@ def test_solarize():
 
 def test_solarize_add():
     # test assertion for invalid type of magnitude
-<<<<<<< HEAD
-=======
-    with pytest.raises(AssertionError):
-        transform = dict(type='SolarizeAdd', magnitude=(1, 2))
-        build_from_cfg(transform, PIPELINES)
-
-    # test assertion for invalid type of thr
-    with pytest.raises(AssertionError):
-        transform = dict(type='SolarizeAdd', magnitude=100, thr=(1, 2))
-        build_from_cfg(transform, PIPELINES)
-
-    # test case when prob=0, therefore no solarize
-    results = construct_toy_data_photometric()
-    transform = dict(type='SolarizeAdd', magnitude=100, thr=128, prob=0.)
-    pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    assert (results['img'] == results['ori_img']).all()
-
-    # test case when thr=0, therefore no solarize
-    results = construct_toy_data_photometric()
-    transform = dict(type='SolarizeAdd', magnitude=100, thr=0, prob=1.)
-    pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    assert (results['img'] == results['ori_img']).all()
-
-    # test case when thr=128, magnitude=100
-    results = construct_toy_data_photometric()
-    transform = dict(type='SolarizeAdd', magnitude=100, thr=128, prob=1.)
-    pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    img_solarized = np.array(
-        [[100, 128, 255], [101, 227, 254], [102, 129, 253]], dtype=np.uint8)
-    img_solarized = np.stack([img_solarized, img_solarized, img_solarized],
-                             axis=-1)
-    assert (results['img'] == img_solarized).all()
-    assert (results['img'] == results['img2']).all()
-
-    # test case when thr=100, magnitude=50
-    results = construct_toy_data_photometric()
-    transform = dict(type='SolarizeAdd', magnitude=50, thr=100, prob=1.)
-    pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    img_solarized = np.array([[50, 128, 255], [51, 127, 254], [52, 129, 253]],
-                             dtype=np.uint8)
-    img_solarized = np.stack([img_solarized, img_solarized, img_solarized],
-                             axis=-1)
-    assert (results['img'] == img_solarized).all()
-    assert (results['img'] == results['img2']).all()
-
-
-def test_posterize():
-    # test assertion for invalid type of bits
->>>>>>> 0b002bd... support random augmentation
     with pytest.raises(AssertionError):
         transform = dict(type='SolarizeAdd', magnitude=(1, 2))
         build_from_cfg(transform, PIPELINES)
@@ -1081,13 +1005,8 @@ def test_sharpness(nb_rand_test=100):
 def test_cutout():
 
     # test assertion for invalid type of shape
-<<<<<<< HEAD
     with pytest.raises(TypeError):
         transform = dict(type='Cutout', shape=None)
-=======
-    with pytest.raises(AssertionError):
-        transform = dict(type='Cutout', shape=2.5)
->>>>>>> 0b002bd... support random augmentation
         build_from_cfg(transform, PIPELINES)
 
     # test assertion for invalid value of prob

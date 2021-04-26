@@ -16,14 +16,19 @@ class LinearClsHead(ClsHead):
             category.
         in_channels (int): Number of channels in the input feature map.
         loss (dict): Config of classification loss.
+        cal_acc (bool): Whether to calculate accuracy during training.
+            If you use Mixup/CutMix or something like that during training,
+            it is not reasonable to calculate accuracy. Defaults to True.
     """  # noqa: W605
 
     def __init__(self,
                  num_classes,
                  in_channels,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                 topk=(1, )):
-        super(LinearClsHead, self).__init__(loss=loss, topk=topk)
+                 topk=(1, ),
+                 cal_acc=True):
+        super(LinearClsHead, self).__init__(
+            loss=loss, topk=topk, cal_acc=cal_acc)
         self.in_channels = in_channels
         self.num_classes = num_classes
 

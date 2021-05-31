@@ -116,7 +116,7 @@ train_pipeline = [
         policies=policies,
         num_policies=2,
         magnitude_level=12),
-    dict(type='ERandomCrop', size=224, backend='pillow'),
+    dict(type='ERandomCrop', size=256, backend='pillow'),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(type='ColorJitter', brightness=0.4, contrast=0.4, saturation=0.4),
     dict(type='Lighting', **img_lighting_cfg),
@@ -138,7 +138,7 @@ test_pipeline = [
             '/mnt/lustre/share/memcached_client/server_list.conf',
             client_cfg='/mnt/lustre/share/memcached_client/client.conf',
             sys_path='/mnt/lustre/share/pymc/py3')),
-    dict(type='ECenterCrop', size=224, backend='pillow'),
+    dict(type='ECenterCrop', size=256, backend='pillow'),
     dict(
         type='Normalize',
         mean=[123.675, 116.28, 103.53],
